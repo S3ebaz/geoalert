@@ -1,0 +1,174 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light dark;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+.emergency-pulse {
+  animation: pulse-border 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse-border {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(185 28 28 / 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgb(185 28 28 / 0);
+  }
+}
+
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  background: #e8eaed;
+}
+
+/* ───────── Símbolos del mapa ─────────
+   Cada marcador es un .ga-mk (caja táctil ≥ 34 px) con variables:
+   --c color del símbolo · --d diámetro visible. */
+.leaflet-div-icon.ga-symbol {
+  background: transparent;
+  border: none;
+}
+
+.ga-mk {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Sismo: círculo con borde blanco + filete oscuro (se ve sobre mapa claro y satélite). */
+.ga-q {
+  display: block;
+  box-sizing: border-box;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  box-shadow:
+    0 0 0 1px rgb(15 23 42 / 0.55),
+    0 1px 5px rgb(0 0 0 / 0.4);
+  transition: transform 120ms ease-out;
+}
+
+.ga-mk:hover .ga-q,
+.ga-mk:hover .ga-storm {
+  transform: scale(1.1);
+}
+
+.ga-old .ga-q {
+  opacity: 0.7;
+}
+
+/* Ciclón: glifo de espiral que gira lento. */
+.ga-storm {
+  display: block;
+  line-height: 0;
+  filter: drop-shadow(0 1px 3px rgb(0 0 0 / 0.5));
+  transition: transform 120ms ease-out;
+}
+
+.ga-mk .ga-storm svg {
+  animation: ga-spin 16s linear infinite;
+}
+
+/* Onda de pulso: evento de la última hora / tu posición. */
+.ga-ring,
+.ga-selring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--d);
+  height: var(--d);
+  margin: calc(var(--d) / -2) 0 0 calc(var(--d) / -2);
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.ga-ring {
+  border: 2px solid var(--c);
+  opacity: 0;
+  animation: ga-ping 1.9s ease-out infinite;
+}
+
+/* Anillo de selección. */
+.ga-selring {
+  box-shadow:
+    0 0 0 3px #0ea5e9,
+    0 0 0 5px #ffffff,
+    0 2px 8px rgb(0 0 0 / 0.5);
+}
+
+/* Insignia: región oceánica (indicador de tsunami de USGS). */
+.ga-badge {
+  position: absolute;
+  top: calc(50% - var(--d) / 2 - 7px);
+  left: calc(50% + var(--d) / 2 - 7px);
+  width: 15px;
+  height: 15px;
+  border: 1.5px solid #ffffff;
+  border-radius: 999px;
+  background: #0369a1;
+  color: #ffffff;
+  font: 700 10px/12px system-ui, sans-serif;
+  text-align: center;
+  pointer-events: none;
+}
+
+/* Tooltips con varias líneas (lugar del sismo, etc.). */
+.leaflet-tooltip.ga-tip {
+  max-width: 16rem;
+  white-space: normal;
+}
+
+.ga-user-dot {
+  position: relative;
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #5ec8e8;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 3px rgb(94 200 232 / 0.35);
+}
+
+@keyframes ga-ping {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes ga-spin {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .emergency-pulse,
+  .ga-ring,
+  .ga-mk .ga-storm svg {
+    animation: none;
+  }
+
+  /* Sin movimiento, el "reciente" se indica con un anillo fijo. */
+  .ga-ring {
+    opacity: 0.6;
+    transform: scale(1.4);
+  }
+}
