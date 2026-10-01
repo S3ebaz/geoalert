@@ -56,6 +56,12 @@ Al pasar el cursor sobre un símbolo se muestra un resumen rápido.
 7. Panel de emergencia de alto contraste y enlace a ruta peatonal OSM. **Sin catálogo oficial de refugios.**
 8. Gateway WebSocket opcional (`npm run ws`).
 
+## Despliegue en GitHub Pages
+
+El sitio de proyecto se publica con `.github/workflows/pages.yml`. El build usa `output: "export"` y prefija los assets con el nombre del repo (`/geoalert`). En el repositorio, Settings → Pages → Source debe ser **GitHub Actions**.
+
+El gateway WebSocket no corre en Pages. `npm run ws` es solo local.
+
 ## Arranque
 
 ```bash
