@@ -50,7 +50,7 @@ Al pasar el cursor sobre un símbolo se muestra un resumen rápido.
 1. Modal de geolocalización con `navigator.geolocation` y fallback a ciudad/país (Open-Meteo Geocoding).
 2. Mapa Leaflet + teselas de Google Maps.
 3. Sismos: feeds GeoJSON de USGS (`all_hour` + `2.5_day`).
-4. Ciclones: `https://www.nhc.noaa.gov/CurrentStorms.json` (puede ir vacío fuera de temporada). Se leen intensidad (nudos), presión, rumbo y velocidad de movimiento, y los enlaces a los avisos.
+4. Ciclones: copia de `CurrentStorms.json` del NHC en `public/storms.json` (el feed no envía CORS, así que el navegador no puede leerlo directo), con trayectoria de pronóstico. Se refresca en cada deploy y cada hora.
 5. Clima puntual: Open-Meteo.
 6. Motor `evaluateCrossAlerts` (magnitud × distancia × edad; modelo P/S solo pedagógico).
 7. Panel de emergencia de alto contraste y enlace a ruta peatonal OSM. **Sin catálogo oficial de refugios.**

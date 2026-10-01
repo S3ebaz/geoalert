@@ -144,13 +144,13 @@ function QuakeBody({
   now
 }: {
   q: EarthquakeEvent;
-  user: Coord;
+  user: Coord | null;
   alerts: CrossAlert[];
   now: number;
 }) {
   const cls = quakeClass(q.mag);
-  const dist = haversineKm(user, q);
-  const waves = estimateWaveTimes(Math.hypot(dist, Math.max(0, q.depthKm)));
+  const dist = user ? haversineKm(user, q) : null;
+  const waves = dist != null ? estimateWaveTimes(Math.hypot(dist, Math.max(0, q.depthKm))) : null;
   const pager = q.pagerAlert ? PAGER_LABEL[q.pagerAlert.toLowerCase()] : undefined;
   const usgs = safeUrl(q.url);
 
@@ -174,15 +174,27 @@ function QuakeBody({
         </Row>
         <Row label="Epicentro">{formatCoord(q.lat, q.lon)}</Row>
         <Row label="Respecto a ti">
-          {formatKm(dist)} al {compassEs(bearingDeg(user, q))}
-          <Sub>Distancia en superficie desde tu posición de referencia</Sub>
+          {dist != null && user ? (
+            <>
+              {formatKm(dist)} al {compassEs(bearingDeg(user, q))}
+              <Sub>Distancia en superficie desde tu posición de referencia</Sub>
+            </>
+          ) : (
+            "Elige una ubicación para calcular la distancia"
+          )}
         </Row>
         <Row label="Ondas P / S">
-          P ≈ {fmtSeconds(waves.pSec)} · S ≈ {fmtSeconds(waves.sSec)}
-          <Sub>
-            Tras el origen, hasta tu posición (modelo educativo con profundidad; no es alerta
-            oficial)
-          </Sub>
+          {dist != null && waves ? (
+            <>
+              P ≈ {fmtSeconds(waves.pSec)} · S ≈ {fmtSeconds(waves.sSec)}
+              <Sub>
+                Tras el origen, hasta tu posición (modelo educativo con profundidad; no es alerta
+                oficial)
+              </Sub>
+            </>
+          ) : (
+            "Requieren tu posición de referencia"
+          )}
         </Row>
         <Row label="Reportes">
           {q.felt != null
@@ -278,12 +290,12 @@ function StormBody({
   now
 }: {
   s: StormEvent;
-  user: Coord;
+  user: Coord | null;
   alerts: CrossAlert[];
   now: number;
 }) {
   const cat = stormCategory(s);
-  const dist = haversineKm(user, s);
+  const dist = user ? haversineKm(user, s) : null;
   const basin = basinLabel(s.id, s.basin);
   const links = [
     { href: safeUrl(s.advisoryUrl), label: "Aviso público del NHC" },
@@ -323,8 +335,14 @@ function StormBody({
         </Row>
         <Row label="Posición">{formatCoord(s.lat, s.lon)}</Row>
         <Row label="Respecto a ti">
-          {formatKm(dist)} al {compassEs(bearingDeg(user, s))}
-          <Sub>Distancia al centro del sistema, no al borde de sus vientos</Sub>
+          {dist != null && user ? (
+            <>
+              {formatKm(dist)} al {compassEs(bearingDeg(user, s))}
+              <Sub>Distancia al centro del sistema, no al borde de sus vientos</Sub>
+            </>
+          ) : (
+            "Elige una ubicación para calcular la distancia"
+          )}
         </Row>
         <Row label="Movimiento">
           {s.movementDir != null && s.movementSpeedMph != null
@@ -394,7 +412,7 @@ export function EventDetailPanel({
   onClose
 }: {
   target: PanelTarget;
-  user: Coord;
+  user: Coord | null;
   alerts: CrossAlert[];
   now: number;
   onClose: () => void;
@@ -418,7 +436,7 @@ export function EventDetailPanel({
         ? stormHeader(target.storm)
         : {
             kind: "Tu posición",
-            title: user.label ?? "Referencia",
+            title: user?.label ?? "Referencia",
             symbol: (
               <span className="flex h-11 w-11 items-center justify-center">
                 <span className="ga-user-dot" />
@@ -457,9 +475,9 @@ export function EventDetailPanel({
           <QuakeBody q={target.quake} user={user} alerts={alerts} now={now} />
         ) : target.kind === "storm" ? (
           <StormBody s={target.storm} user={user} alerts={alerts} now={now} />
-        ) : (
+        ) : user ? (
           <UserBody user={user} />
-        )}
+        ) : null}
       </div>
     </section>
   );

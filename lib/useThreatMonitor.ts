@@ -64,15 +64,27 @@ export function useThreatMonitor() {
     setManualOpen(false);
   }, []);
 
+  useEffect(() => {
+    let stop = false;
+    async function loadStorms() {
+      const next = await fetchActiveStorms();
+      if (!stop) setStorms(next);
+    }
+    void loadStorms();
+    const id = window.setInterval(() => void loadStorms(), 60_000);
+    return () => {
+      stop = true;
+      window.clearInterval(id);
+    };
+  }, []);
+
   const refresh = useCallback(async () => {
     if (!coord) return;
-    const [q, s, w] = await Promise.all([
+    const [q, w] = await Promise.all([
       fetchEarthquakes(),
-      fetchActiveStorms(),
       fetchLocalWeather(coord.lat, coord.lon)
     ]);
     setQuakes(q);
-    setStorms(s);
     setWeather(w);
   }, [coord]);
 

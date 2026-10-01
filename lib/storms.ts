@@ -1,32 +1,13 @@
 import { compassEs } from "./geo";
 import type { StormEvent } from "./types";
 
-/** Feed público NHC de ciclones activos. Puede estar vacío fuera de temporada. */
-const NHC_CURRENT = "https://www.nhc.noaa.gov/CurrentStorms.json";
+/**
+ * El JSON del NHC no envía CORS, así que el navegador no puede leerlo.
+ * El build publica una copia en el mismo origen (`public/storms.json`).
+ */
+const SNAPSHOT = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/storms.json`;
 
-type NhcLink = { url?: string } | null;
-
-type NhcStorm = {
-  id?: string;
-  binNumber?: string;
-  name?: string;
-  classification?: string;
-  /** Viento máximo sostenido, nudos. */
-  intensity?: number | string;
-  /** Presión central mínima, mb. */
-  pressure?: number | string;
-  latitudeNumeric?: number;
-  longitudeNumeric?: number;
-  /** Grados desde el norte. */
-  movementDir?: number | string;
-  /** Millas por hora. */
-  movementSpeed?: number | string;
-  lastUpdate?: string;
-  basin?: string;
-  publicAdvisory?: NhcLink;
-  forecastDiscussion?: NhcLink;
-  forecastGraphics?: NhcLink;
-};
+type Snapshot = { storms?: StormEvent[]; fetchedAt?: string };
 
 function num(v: unknown): number | undefined {
   if (v == null || v === "") return undefined;
@@ -39,35 +20,27 @@ function movementText(dir?: number, mph?: number): string | undefined {
   return `Hacia el ${compassEs(dir)} (${Math.round(dir)}°) a ${Math.round(mph)} mph (${Math.round(mph * 1.609)} km/h).`;
 }
 
+function normalize(raw: StormEvent): StormEvent | null {
+  if (!Number.isFinite(raw.lat) || !Number.isFinite(raw.lon)) return null;
+  const movementDir = num(raw.movementDir);
+  const movementSpeedMph = num(raw.movementSpeedMph);
+  return {
+    ...raw,
+    windKt: num(raw.windKt),
+    pressureMb: num(raw.pressureMb),
+    movementDir,
+    movementSpeedMph,
+    movement: raw.movement ?? movementText(movementDir, movementSpeedMph),
+    track: (raw.track ?? []).filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lon))
+  };
+}
+
 export async function fetchActiveStorms(): Promise<StormEvent[]> {
   try {
-    const res = await fetch(NHC_CURRENT, { cache: "no-store" });
+    const res = await fetch(SNAPSHOT, { cache: "no-store" });
     if (!res.ok) return [];
-    const json = (await res.json()) as { activeStorms?: NhcStorm[] };
-
-    return (json.activeStorms ?? [])
-      .filter((s) => s.latitudeNumeric != null && s.longitudeNumeric != null)
-      .map((s) => {
-        const movementDir = num(s.movementDir);
-        const movementSpeedMph = num(s.movementSpeed);
-        return {
-          id: s.id ?? s.binNumber ?? s.name ?? crypto.randomUUID(),
-          name: s.name ?? "Sistema tropical",
-          classification: s.classification ?? "Desconocido",
-          lat: s.latitudeNumeric as number,
-          lon: s.longitudeNumeric as number,
-          windKt: num(s.intensity),
-          pressureMb: num(s.pressure),
-          movementDir,
-          movementSpeedMph,
-          movement: movementText(movementDir, movementSpeedMph),
-          basin: s.basin,
-          lastUpdate: s.lastUpdate,
-          advisoryUrl: s.publicAdvisory?.url,
-          discussionUrl: s.forecastDiscussion?.url,
-          graphicsUrl: s.forecastGraphics?.url
-        };
-      });
+    const json = (await res.json()) as Snapshot;
+    return (json.storms ?? []).map(normalize).filter((s): s is StormEvent => s != null);
   } catch {
     return [];
   }

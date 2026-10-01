@@ -44,6 +44,12 @@ export type EarthquakeEvent = {
   rms?: number;
 };
 
+export type TrackPoint = {
+  lat: number;
+  lon: number;
+  label?: string | null;
+};
+
 export type StormEvent = {
   id: string;
   name: string;
@@ -65,6 +71,8 @@ export type StormEvent = {
   advisoryUrl?: string;
   discussionUrl?: string;
   graphicsUrl?: string;
+  /** Pronóstico oficial de trayectoria (puntos NHC). No es el cono. */
+  track?: TrackPoint[];
 };
 
 export type WeatherSnapshot = {

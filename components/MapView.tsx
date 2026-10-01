@@ -13,7 +13,7 @@ const MapCanvas = dynamic(() => import("./MapCanvas").then((m) => m.MapCanvas), 
 });
 
 export function MapView(props: {
-  user: Coord;
+  user: Coord | null;
   quakes: EarthquakeEvent[];
   storms: StormEvent[];
   alerts: CrossAlert[];

@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import L from "leaflet";
 import {
   Circle,
   MapContainer,
   Marker,
+  Polyline,
   TileLayer,
   Tooltip,
   useMap,
@@ -129,11 +130,18 @@ function stormIcon(s: StormEvent, cat: StormCategory, selected: boolean) {
 
 /* ───────────── Comportamiento del mapa ───────────── */
 
-function Recenter({ user }: { user: Coord }) {
+function Recenter({ user, storms }: { user: Coord | null; storms: StormEvent[] }) {
   const map = useMap();
+  const stormKey = storms.map((s) => s.id).join(",");
   useEffect(() => {
-    map.setView([user.lat, user.lon], 6);
-  }, [map, user.lat, user.lon]);
+    if (user) {
+      map.setView([user.lat, user.lon], 6);
+      return;
+    }
+    if (storms.length === 0) return;
+    const bounds = L.latLngBounds(storms.map((s) => [s.lat, s.lon] as [number, number]));
+    map.fitBounds(bounds.pad(0.45), { maxZoom: 5 });
+  }, [map, user, stormKey]);
   return null;
 }
 
@@ -178,7 +186,7 @@ export function MapCanvas({
   selection,
   onSelect
 }: {
-  user: Coord;
+  user: Coord | null;
   quakes: EarthquakeEvent[];
   storms: StormEvent[];
   alerts: CrossAlert[];
@@ -207,18 +215,23 @@ export function MapCanvas({
     return top;
   }, [quakes, selQuakeId]);
 
-  const focus = selectedQuake ?? selectedStorm ?? (userSelected ? user : null);
+  const focus = selectedQuake ?? selectedStorm ?? (userSelected && user ? user : null);
   const hasPanel = Boolean(focus);
   const selKey = selection ? `${selection.kind}:${"id" in selection ? selection.id : ""}` : null;
 
   const showAccuracy =
-    user.source === "gps" && user.accuracyM != null && user.accuracyM > 30 && user.accuracyM < 100_000;
+    user?.source === "gps" && user.accuracyM != null && user.accuracyM > 30 && user.accuracyM < 100_000;
+  const center: [number, number] = user
+    ? [user.lat, user.lon]
+    : storms[0]
+      ? [storms[0].lat, storms[0].lon]
+      : [19, -110];
 
   return (
     <div className="relative h-[480px] w-full overflow-hidden rounded-2xl md:h-[520px]">
       <MapContainer
-        center={[user.lat, user.lon]}
-        zoom={6}
+        center={center}
+        zoom={user ? 6 : 4}
         className="h-full w-full"
         scrollWheelZoom
         maxZoom={20}
@@ -230,7 +243,7 @@ export function MapCanvas({
           subdomains={["0", "1", "2", "3"]}
           maxZoom={20}
         />
-        <Recenter user={user} />
+        <Recenter user={user} storms={storms} />
         <ClearOnMapClick onClear={() => onSelect(null)} />
         <FocusSelected
           selKey={hasPanel ? selKey : null}
@@ -238,7 +251,7 @@ export function MapCanvas({
           lon={focus ? focus.lon : null}
         />
 
-        {showAccuracy ? (
+        {showAccuracy && user ? (
           <Circle
             center={[user.lat, user.lon]}
             radius={user.accuracyM as number}
@@ -265,18 +278,27 @@ export function MapCanvas({
           ))}
         {storms.map((s) => {
           const cat = stormCategory(s);
+          const line = (s.track ?? []).map((p) => [p.lat, p.lon] as [number, number]);
           return (
-            <Circle
-              key={`halo-${s.id}`}
-              center={[s.lat, s.lon]}
-              radius={180_000}
-              interactive={false}
-              pathOptions={{
-                color: cat.color,
-                fillOpacity: s.id === selStormId ? 0.16 : 0.08,
-                weight: s.id === selStormId ? 2 : 1
-              }}
-            />
+            <Fragment key={`storm-layer-${s.id}`}>
+              <Circle
+                center={[s.lat, s.lon]}
+                radius={180_000}
+                interactive={false}
+                pathOptions={{
+                  color: cat.color,
+                  fillOpacity: s.id === selStormId ? 0.16 : 0.08,
+                  weight: s.id === selStormId ? 2 : 1
+                }}
+              />
+              {line.length > 1 ? (
+                <Polyline
+                  positions={line}
+                  interactive={false}
+                  pathOptions={{ color: cat.color, weight: 3, opacity: 0.85 }}
+                />
+              ) : null}
+            </Fragment>
           );
         })}
 
@@ -327,18 +349,20 @@ export function MapCanvas({
           );
         })}
 
-        <Marker
-          position={[user.lat, user.lon]}
-          icon={userIcon(userSelected)}
-          zIndexOffset={100_000}
-          eventHandlers={{ click: () => onSelect({ kind: "user" }) }}
-        >
-          {userSelected ? null : (
-            <Tooltip direction="top" className="ga-tip">
-              Tu posición · {user.label ?? "referencia"}
-            </Tooltip>
-          )}
-        </Marker>
+        {user ? (
+          <Marker
+            position={[user.lat, user.lon]}
+            icon={userIcon(userSelected)}
+            zIndexOffset={100_000}
+            eventHandlers={{ click: () => onSelect({ kind: "user" }) }}
+          >
+            {userSelected ? null : (
+              <Tooltip direction="top" className="ga-tip">
+                Tu posición · {user.label ?? "referencia"}
+              </Tooltip>
+            )}
+          </Marker>
+        ) : null}
       </MapContainer>
 
       <div className="absolute right-3 top-3 z-[1000] flex overflow-hidden rounded-lg border border-slate-200 bg-white/95 text-xs font-medium shadow dark:border-slate-700 dark:bg-slate-900/95">
