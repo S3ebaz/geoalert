@@ -10,7 +10,7 @@ import {
   saveCoord
 } from "./geolocation";
 import { ensureNotificationPermission, pushLocalAlert } from "./notifications";
-import { fetchActiveStorms, fetchLocalWeather } from "./storms";
+import { fetchActiveStorms, fetchLocalWeather, bundledStorms } from "./storms";
 import type { Coord, CrossAlert, EarthquakeEvent, StormEvent, WeatherSnapshot } from "./types";
 
 export function useThreatMonitor() {
@@ -20,7 +20,7 @@ export function useThreatMonitor() {
   const [busyGeo, setBusyGeo] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
   const [quakes, setQuakes] = useState<EarthquakeEvent[]>([]);
-  const [storms, setStorms] = useState<StormEvent[]>([]);
+  const [storms, setStorms] = useState<StormEvent[]>(bundledStorms);
   const [weather, setWeather] = useState<WeatherSnapshot | null>(null);
   const [emergencyOpen, setEmergencyOpen] = useState(false);
   const seen = useRef(new Set<string>());
@@ -68,7 +68,7 @@ export function useThreatMonitor() {
     let stop = false;
     async function loadStorms() {
       const next = await fetchActiveStorms();
-      if (!stop) setStorms(next);
+      if (!stop && next.length > 0) setStorms(next);
     }
     void loadStorms();
     const id = window.setInterval(() => void loadStorms(), 60_000);

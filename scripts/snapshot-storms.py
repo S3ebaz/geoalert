@@ -105,7 +105,7 @@ def main() -> int:
         )
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(
+    text = (
         json.dumps(
             {
                 "fetchedAt": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -115,9 +115,10 @@ def main() -> int:
             ensure_ascii=False,
             indent=2,
         )
-        + "\n",
-        encoding="utf-8",
+        + "\n"
     )
+    OUT.write_text(text, encoding="utf-8")
+    (ROOT / "lib" / "active-storms.json").write_text(text, encoding="utf-8")
     print(f"{len(storms)} ciclones -> {OUT}")
     return 0
 

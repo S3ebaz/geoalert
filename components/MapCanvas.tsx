@@ -111,18 +111,19 @@ function quakeIcon(q: EarthquakeEvent, bucket: AgeBucket, selected: boolean) {
 function stormIcon(s: StormEvent, cat: StormCategory, selected: boolean) {
   const key = `s:${cat.key}:${s.name}:${selected ? 1 : 0}`;
   return cachedIcon(key, () => {
-    const disc = Math.round(cat.size * 0.9);
-    const box = Math.max(40, cat.size + 14);
+    const size = Math.max(cat.size, 48);
+    const box = size + 28;
     const label = `Ciclón ${s.name}, ${cat.label}`;
     return L.divIcon({
       className: "ga-symbol",
       iconSize: [box, box],
-      iconAnchor: [box / 2, box / 2],
-      tooltipAnchor: [0, -(disc / 2) - 2],
+      iconAnchor: [box / 2, size / 2],
+      tooltipAnchor: [0, -(size / 2) - 2],
       html:
-        `<div class="ga-mk" role="img" aria-label="${esc(label)}" style="--c:${cat.color};--d:${disc}px">` +
+        `<div class="ga-mk" role="img" aria-label="${esc(label)}" style="--c:${cat.color};--d:${size}px">` +
         (selected ? `<span class="ga-selring"></span>` : "") +
-        `<span class="ga-storm">${stormGlyphSvg(cat.color, cat.size)}</span>` +
+        `<span class="ga-storm">${stormGlyphSvg(cat.color, size)}</span>` +
+        `<span class="ga-storm-name">${esc(s.name)}</span>` +
         `</div>`
     });
   });
@@ -140,16 +141,24 @@ function stormPoints(storms: StormEvent[]): [number, number][] {
 }
 
 /** Encuadra todos los ciclones y su trayectoria. No salta a la ciudad del usuario. */
-function FrameStorms({ storms, token }: { storms: StormEvent[]; token: number }) {
+function FrameStorms({
+  storms,
+  user,
+  token
+}: {
+  storms: StormEvent[];
+  user: Coord | null;
+  token: number;
+}) {
   const map = useMap();
   const key = storms.map((s) => `${s.id}:${s.lat}:${s.lon}`).join("|");
   useEffect(() => {
     const pts = stormPoints(storms);
+    if (user) pts.push([user.lat, user.lon]);
     if (pts.length === 0) return;
-    map.fitBounds(L.latLngBounds(pts).pad(0.25), { maxZoom: 5, animate: true });
-    // key/token son la señal: no reencuadrar en cada render.
+    map.fitBounds(L.latLngBounds(pts).pad(0.2), { maxZoom: 5, animate: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, token, key]);
+  }, [map, token, key, user?.lat, user?.lon]);
   return null;
 }
 
@@ -258,7 +267,7 @@ export function MapCanvas({
           subdomains={["0", "1", "2", "3"]}
           maxZoom={20}
         />
-        <FrameStorms storms={storms} token={stormFrame} />
+        <FrameStorms storms={storms} user={user} token={stormFrame} />
         <FlyToUser user={user} token={userFrame} />
         <ClearOnMapClick onClear={() => onSelect(null)} />
         <FocusSelected

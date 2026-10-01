@@ -1,4 +1,5 @@
 import { compassEs } from "./geo";
+import snapshot from "./active-storms.json";
 import type { StormEvent } from "./types";
 
 /**
@@ -35,14 +36,19 @@ function normalize(raw: StormEvent): StormEvent | null {
   };
 }
 
+export const bundledStorms: StormEvent[] = (snapshot.storms as unknown as StormEvent[])
+  .map(normalize)
+  .filter((s): s is StormEvent => s != null);
+
 export async function fetchActiveStorms(): Promise<StormEvent[]> {
   try {
     const res = await fetch(SNAPSHOT, { cache: "no-store" });
     if (!res.ok) return [];
     const json = (await res.json()) as Snapshot;
-    return (json.storms ?? []).map(normalize).filter((s): s is StormEvent => s != null);
+    const live = (json.storms ?? []).map(normalize).filter((s): s is StormEvent => s != null);
+    return live.length > 0 ? live : bundledStorms.map(normalize).filter((s): s is StormEvent => s != null);
   } catch {
-    return [];
+    return bundledStorms.map(normalize).filter((s): s is StormEvent => s != null);
   }
 }
 
