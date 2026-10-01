@@ -1,12 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
+const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
 export const metadata: Metadata = {
   title: "GeoAlerta Global",
   description:
     "Prototipo educativo de monitoreo multi-amenaza. No sustituye alertas oficiales.",
-  manifest: "/manifest.json",
-  icons: { icon: "/icon.svg" }
+  manifest: `${base}/manifest.json`,
+  icons: { icon: `${base}/icon.svg` }
 };
 
 export const viewport: Viewport = {
