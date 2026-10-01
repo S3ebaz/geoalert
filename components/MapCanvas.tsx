@@ -130,18 +130,35 @@ function stormIcon(s: StormEvent, cat: StormCategory, selected: boolean) {
 
 /* ───────────── Comportamiento del mapa ───────────── */
 
-function Recenter({ user, storms }: { user: Coord | null; storms: StormEvent[] }) {
+function stormPoints(storms: StormEvent[]): [number, number][] {
+  const pts: [number, number][] = [];
+  for (const s of storms) {
+    pts.push([s.lat, s.lon]);
+    for (const p of s.track ?? []) pts.push([p.lat, p.lon]);
+  }
+  return pts;
+}
+
+/** Encuadra todos los ciclones y su trayectoria. No salta a la ciudad del usuario. */
+function FrameStorms({ storms, token }: { storms: StormEvent[]; token: number }) {
   const map = useMap();
-  const stormKey = storms.map((s) => s.id).join(",");
+  const key = storms.map((s) => `${s.id}:${s.lat}:${s.lon}`).join("|");
   useEffect(() => {
-    if (user) {
-      map.setView([user.lat, user.lon], 6);
-      return;
-    }
-    if (storms.length === 0) return;
-    const bounds = L.latLngBounds(storms.map((s) => [s.lat, s.lon] as [number, number]));
-    map.fitBounds(bounds.pad(0.45), { maxZoom: 5 });
-  }, [map, user, stormKey]);
+    const pts = stormPoints(storms);
+    if (pts.length === 0) return;
+    map.fitBounds(L.latLngBounds(pts).pad(0.25), { maxZoom: 5, animate: true });
+    // key/token son la señal: no reencuadrar en cada render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, token, key]);
+  return null;
+}
+
+function FlyToUser({ user, token }: { user: Coord | null; token: number }) {
+  const map = useMap();
+  useEffect(() => {
+    if (!user || token === 0) return;
+    map.setView([user.lat, user.lon], 6, { animate: true });
+  }, [map, user, token]);
   return null;
 }
 
@@ -194,6 +211,8 @@ export function MapCanvas({
   onSelect: (s: MapSelection) => void;
 }) {
   const [mapStyle, setMapStyle] = useState<GoogleMapStyle>("roadmap");
+  const [stormFrame, setStormFrame] = useState(1);
+  const [userFrame, setUserFrame] = useState(0);
   const lyrs = mapStyle === "hybrid" ? "y" : "m";
   const now = Date.now();
 
@@ -221,17 +240,13 @@ export function MapCanvas({
 
   const showAccuracy =
     user?.source === "gps" && user.accuracyM != null && user.accuracyM > 30 && user.accuracyM < 100_000;
-  const center: [number, number] = user
-    ? [user.lat, user.lon]
-    : storms[0]
-      ? [storms[0].lat, storms[0].lon]
-      : [19, -110];
+  const center: [number, number] = storms[0] ? [storms[0].lat, storms[0].lon] : [18, -130];
 
   return (
     <div className="relative h-[480px] w-full overflow-hidden rounded-2xl md:h-[520px]">
       <MapContainer
         center={center}
-        zoom={user ? 6 : 4}
+        zoom={4}
         className="h-full w-full"
         scrollWheelZoom
         maxZoom={20}
@@ -243,7 +258,8 @@ export function MapCanvas({
           subdomains={["0", "1", "2", "3"]}
           maxZoom={20}
         />
-        <Recenter user={user} storms={storms} />
+        <FrameStorms storms={storms} token={stormFrame} />
+        <FlyToUser user={user} token={userFrame} />
         <ClearOnMapClick onClear={() => onSelect(null)} />
         <FocusSelected
           selKey={hasPanel ? selKey : null}
@@ -292,11 +308,18 @@ export function MapCanvas({
                 }}
               />
               {line.length > 1 ? (
-                <Polyline
-                  positions={line}
-                  interactive={false}
-                  pathOptions={{ color: cat.color, weight: 3, opacity: 0.85 }}
-                />
+                <>
+                  <Polyline
+                    positions={line}
+                    interactive={false}
+                    pathOptions={{ color: "#ffffff", weight: 7, opacity: 0.9 }}
+                  />
+                  <Polyline
+                    positions={line}
+                    interactive={false}
+                    pathOptions={{ color: cat.color, weight: 4, opacity: 1 }}
+                  />
+                </>
               ) : null}
             </Fragment>
           );
@@ -338,13 +361,9 @@ export function MapCanvas({
               zIndexOffset={isSel ? 60_000 : 20_000}
               eventHandlers={{ click: () => onSelect({ kind: "storm", id: s.id }) }}
             >
-              {isSel ? null : (
-                <Tooltip direction="top" className="ga-tip">
-                  <strong>{s.name}</strong> · {cat.label}
-                  <br />
-                  Toca para ver el detalle
-                </Tooltip>
-              )}
+              <Tooltip permanent direction="top" className="ga-tip" offset={[0, -4]}>
+                <strong>{s.name}</strong> · {cat.short}
+              </Tooltip>
             </Marker>
           );
         })}
@@ -365,23 +384,43 @@ export function MapCanvas({
         ) : null}
       </MapContainer>
 
-      <div className="absolute right-3 top-3 z-[1000] flex overflow-hidden rounded-lg border border-slate-200 bg-white/95 text-xs font-medium shadow dark:border-slate-700 dark:bg-slate-900/95">
-        <button
-          type="button"
-          aria-pressed={mapStyle === "roadmap"}
-          onClick={() => setMapStyle("roadmap")}
-          className={`px-3 py-2 ${mapStyle === "roadmap" ? "bg-sky-700 text-white" : ""}`}
-        >
-          Mapa
-        </button>
-        <button
-          type="button"
-          aria-pressed={mapStyle === "hybrid"}
-          onClick={() => setMapStyle("hybrid")}
-          className={`px-3 py-2 ${mapStyle === "hybrid" ? "bg-sky-700 text-white" : ""}`}
-        >
-          Satélite
-        </button>
+      <div className="absolute right-3 top-3 z-[1000] flex flex-col items-end gap-2">
+        <div className="flex overflow-hidden rounded-lg border border-slate-200 bg-white/95 text-xs font-medium shadow dark:border-slate-700 dark:bg-slate-900/95">
+          <button
+            type="button"
+            aria-pressed={mapStyle === "roadmap"}
+            onClick={() => setMapStyle("roadmap")}
+            className={`px-3 py-2 ${mapStyle === "roadmap" ? "bg-sky-700 text-white" : ""}`}
+          >
+            Mapa
+          </button>
+          <button
+            type="button"
+            aria-pressed={mapStyle === "hybrid"}
+            onClick={() => setMapStyle("hybrid")}
+            className={`px-3 py-2 ${mapStyle === "hybrid" ? "bg-sky-700 text-white" : ""}`}
+          >
+            Satélite
+          </button>
+        </div>
+        {storms.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => setStormFrame((n) => n + 1)}
+            className="rounded-lg bg-violet-700 px-3 py-2 text-xs font-semibold text-white shadow"
+          >
+            Ver huracanes ({storms.length})
+          </button>
+        ) : null}
+        {user ? (
+          <button
+            type="button"
+            onClick={() => setUserFrame((n) => n + 1)}
+            className="rounded-lg border border-slate-200 bg-white/95 px-3 py-2 text-xs font-medium shadow dark:border-slate-700 dark:bg-slate-900/95"
+          >
+            Mi ubicación
+          </button>
+        ) : null}
       </div>
 
       {/* En móvil el panel ocupa la parte baja: se oculta la leyenda mientras está abierto. */}
