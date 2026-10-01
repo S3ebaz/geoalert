@@ -1,0 +1,355 @@
+{
+  "fetchedAt": "2026-10-01T05:42:38Z",
+  "source": "https://www.nhc.noaa.gov/CurrentStorms.json",
+  "storms": [
+    {
+      "id": "ep182026",
+      "name": "Rachel",
+      "classification": "HU",
+      "lat": 19.2,
+      "lon": -108.5,
+      "windKt": 80.0,
+      "pressureMb": 975.0,
+      "movementDir": 320.0,
+      "movementSpeedMph": 7.0,
+      "basin": null,
+      "lastUpdate": "2026-10-01T03:00:00.000Z",
+      "advisoryUrl": "https://www.nhc.noaa.gov/text/MIATCPEP3.shtml",
+      "discussionUrl": "https://www.nhc.noaa.gov/text/MIATCDEP3.shtml",
+      "graphicsUrl": "https://www.nhc.noaa.gov/graphics_ep3.shtml",
+      "track": [
+        {
+          "lat": 19.2,
+          "lon": -108.5,
+          "label": null
+        },
+        {
+          "lat": 19.6,
+          "lon": -109.1,
+          "label": null
+        },
+        {
+          "lat": 19.8,
+          "lon": -109.6,
+          "label": null
+        },
+        {
+          "lat": 20.0,
+          "lon": -110.3,
+          "label": null
+        },
+        {
+          "lat": 20.1,
+          "lon": -111.1,
+          "label": null
+        },
+        {
+          "lat": 20.2,
+          "lon": -111.9,
+          "label": null
+        },
+        {
+          "lat": 20.4,
+          "lon": -112.9,
+          "label": null
+        },
+        {
+          "lat": 19.2,
+          "lon": -108.5,
+          "label": null
+        },
+        {
+          "lat": 19.6,
+          "lon": -109.1,
+          "label": null
+        },
+        {
+          "lat": 19.8,
+          "lon": -109.6,
+          "label": null
+        },
+        {
+          "lat": 20.0,
+          "lon": -110.3,
+          "label": null
+        },
+        {
+          "lat": 20.1,
+          "lon": -111.1,
+          "label": null
+        },
+        {
+          "lat": 20.2,
+          "lon": -111.9,
+          "label": null
+        },
+        {
+          "lat": 20.4,
+          "lon": -112.9,
+          "label": null
+        },
+        {
+          "lat": 20.7,
+          "lon": -114.9,
+          "label": null
+        },
+        {
+          "lat": 20.9,
+          "lon": -118.0,
+          "label": null
+        },
+        {
+          "lat": 19.2,
+          "lon": -108.5,
+          "label": null
+        },
+        {
+          "lat": 19.6,
+          "lon": -109.1,
+          "label": null
+        },
+        {
+          "lat": 19.8,
+          "lon": -109.6,
+          "label": null
+        },
+        {
+          "lat": 20.0,
+          "lon": -110.3,
+          "label": null
+        },
+        {
+          "lat": 20.1,
+          "lon": -111.1,
+          "label": null
+        },
+        {
+          "lat": 20.2,
+          "lon": -111.9,
+          "label": null
+        },
+        {
+          "lat": 20.4,
+          "lon": -112.9,
+          "label": null
+        },
+        {
+          "lat": 20.7,
+          "lon": -114.9,
+          "label": null
+        },
+        {
+          "lat": 20.9,
+          "lon": -118.0,
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "ep192026",
+      "name": "Nineteen-E",
+      "classification": "TD",
+      "lat": 15.2,
+      "lon": -125.9,
+      "windKt": 25.0,
+      "pressureMb": 1006.0,
+      "movementDir": 70.0,
+      "movementSpeedMph": 14.0,
+      "basin": null,
+      "lastUpdate": "2026-10-01T03:00:00.000Z",
+      "advisoryUrl": "https://www.nhc.noaa.gov/text/MIATCPEP4.shtml",
+      "discussionUrl": "https://www.nhc.noaa.gov/text/MIATCDEP4.shtml",
+      "graphicsUrl": "https://www.nhc.noaa.gov/graphics_ep4.shtml",
+      "track": [
+        {
+          "lat": 15.2,
+          "lon": -125.9,
+          "label": null
+        },
+        {
+          "lat": 15.4,
+          "lon": -124.2,
+          "label": null
+        },
+        {
+          "lat": 15.4,
+          "lon": -122.0,
+          "label": null
+        },
+        {
+          "lat": 15.2,
+          "lon": -125.9,
+          "label": null
+        },
+        {
+          "lat": 15.4,
+          "lon": -124.2,
+          "label": null
+        },
+        {
+          "lat": 15.4,
+          "lon": -122.0,
+          "label": null
+        },
+        {
+          "lat": 15.2,
+          "lon": -125.9,
+          "label": null
+        },
+        {
+          "lat": 15.4,
+          "lon": -124.2,
+          "label": null
+        },
+        {
+          "lat": 15.4,
+          "lon": -122.0,
+          "label": null
+        }
+      ]
+    },
+    {
+      "id": "ep152026",
+      "name": "Nolo",
+      "classification": "TS",
+      "lat": 21.7,
+      "lon": -165.0,
+      "windKt": 40.0,
+      "pressureMb": 999.0,
+      "movementDir": 275.0,
+      "movementSpeedMph": 5.0,
+      "basin": null,
+      "lastUpdate": "2026-10-01T06:00:00.000Z",
+      "advisoryUrl": "https://www.nhc.noaa.gov/text/HFOTCPCP2.shtml",
+      "discussionUrl": "https://www.nhc.noaa.gov/text/HFOTCDCP2.shtml",
+      "graphicsUrl": "https://www.nhc.noaa.gov/graphics_cp2.shtml",
+      "track": [
+        {
+          "lat": 21.7,
+          "lon": -165.0,
+          "label": null
+        },
+        {
+          "lat": 21.6,
+          "lon": -165.3,
+          "label": null
+        },
+        {
+          "lat": 21.9,
+          "lon": -165.9,
+          "label": null
+        },
+        {
+          "lat": 22.3,
+          "lon": -166.6,
+          "label": null
+        },
+        {
+          "lat": 22.6,
+          "lon": -167.8,
+          "label": null
+        },
+        {
+          "lat": 22.7,
+          "lon": -170.0,
+          "label": null
+        },
+        {
+          "lat": 22.8,
+          "lon": -173.0,
+          "label": null
+        },
+        {
+          "lat": 21.7,
+          "lon": -165.0,
+          "label": null
+        },
+        {
+          "lat": 21.6,
+          "lon": -165.3,
+          "label": null
+        },
+        {
+          "lat": 21.9,
+          "lon": -165.9,
+          "label": null
+        },
+        {
+          "lat": 22.3,
+          "lon": -166.6,
+          "label": null
+        },
+        {
+          "lat": 22.6,
+          "lon": -167.8,
+          "label": null
+        },
+        {
+          "lat": 22.7,
+          "lon": -170.0,
+          "label": null
+        },
+        {
+          "lat": 22.8,
+          "lon": -173.0,
+          "label": null
+        },
+        {
+          "lat": 24.2,
+          "lon": -180.2,
+          "label": null
+        },
+        {
+          "lat": 25.5,
+          "lon": -186.9,
+          "label": null
+        },
+        {
+          "lat": 21.7,
+          "lon": -165.0,
+          "label": null
+        },
+        {
+          "lat": 21.6,
+          "lon": -165.3,
+          "label": null
+        },
+        {
+          "lat": 21.9,
+          "lon": -165.9,
+          "label": null
+        },
+        {
+          "lat": 22.3,
+          "lon": -166.6,
+          "label": null
+        },
+        {
+          "lat": 22.6,
+          "lon": -167.8,
+          "label": null
+        },
+        {
+          "lat": 22.7,
+          "lon": -170.0,
+          "label": null
+        },
+        {
+          "lat": 22.8,
+          "lon": -173.0,
+          "label": null
+        },
+        {
+          "lat": 24.2,
+          "lon": -180.2,
+          "label": null
+        },
+        {
+          "lat": 25.5,
+          "lon": -186.9,
+          "label": null
+        }
+      ]
+    }
+  ]
+}
