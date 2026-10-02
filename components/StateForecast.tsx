@@ -1,5 +1,8 @@
 "use client";
 
+"use client";
+
+import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import { haversineKm } from "@/lib/geo";
 import {
@@ -10,57 +13,19 @@ import {
 } from "@/lib/state-forecast";
 import type { Coord } from "@/lib/types";
 
-function hourLabel(iso: string) {
-  const d = new Date(iso);
-  if (!Number.isFinite(d.getTime())) return "";
-  return d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
-}
-
-function Card({ f, highlight }: { f: PlaceForecast; highlight?: boolean }) {
-  return (
-    <article
-      className={`rounded-2xl border p-3 ${
-        highlight
-          ? "border-sky-600 bg-sky-50 dark:bg-sky-950"
-          : "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
-      }`}
-    >
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{f.state}</p>
-      <p className="text-sm text-slate-600 dark:text-slate-300">{f.place}</p>
-      <p className="mt-1 text-3xl font-semibold tabular-nums leading-none">
-        {Number.isFinite(f.tempC) ? f.tempC.toFixed(1) : "—"}
-        <span className="text-lg"> °C</span>
-      </p>
-      {f.feelsC != null ? (
-        <p className="mt-1 text-xs text-slate-500">Sensación {f.feelsC.toFixed(1)} °C</p>
-      ) : null}
-      <p className="mt-2 text-sm">
-        Lluvia ahora {Math.round(f.rainProbNow)}% · máx. 6 h {Math.round(f.rainProb6h)}%
-      </p>
-      <p className="text-sm">Nubes {cloudMotion(f)}</p>
-      <p className="text-xs text-slate-500">Cobertura nubosa {Math.round(f.cloudCover)}%</p>
-      {f.hours.length > 0 ? (
-        <div className="mt-2 flex gap-1 overflow-x-auto pb-1">
-          {f.hours.slice(0, 8).map((h) => (
-            <div
-              key={h.time}
-              className="min-w-[3.4rem] rounded-lg bg-slate-100 px-1 py-1 text-center text-[10px] dark:bg-slate-900"
-            >
-              <div>{hourLabel(h.time)}</div>
-              <div className="font-semibold">{Number.isFinite(h.tempC) ? `${Math.round(h.tempC)}°` : "—"}</div>
-              <div>{Math.round(h.rainProb)}%</div>
-            </div>
-          ))}
-        </div>
-      ) : null}
-    </article>
-  );
-}
+const MexicoTempMap = dynamic(() => import("./MexicoTempMap").then((m) => m.MexicoTempMap), {
+  ssr: false,
+  loading: () => (
+    <div className="mt-3 flex h-[70vh] min-h-[420px] items-center justify-center rounded-2xl bg-slate-200 text-sm dark:bg-slate-800">
+      Cargando mapa de estados…
+    </div>
+  )
+});
 
 export function StateForecast({ user }: { user: Coord | null }) {
   const [rows, setRows] = useState<PlaceForecast[]>([]);
   const [here, setHere] = useState<PlaceForecast | null>(null);
-  const [q, setQ] = useState("");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -104,42 +69,36 @@ export function StateForecast({ user }: { user: Coord | null }) {
 
   const nearest = useMemo(() => {
     if (!user || rows.length === 0) return null;
-    return rows.reduce((best, row) =>
-      haversineKm(user, row) < haversineKm(user, best) ? row : best
-    );
+    return rows.reduce((best, row) => (haversineKm(user, row) < haversineKm(user, best) ? row : best));
   }, [user, rows]);
 
-  const shown = rows.filter((r) => {
-    const n = q.trim().toLowerCase();
-    if (!n) return true;
-    return r.state.toLowerCase().includes(n) || r.place.toLowerCase().includes(n);
-  });
+  const selected = rows.find((r) => r.id === (selectedId ?? nearest?.id)) ?? null;
 
   return (
-    <section className="rounded-2xl border border-slate-200 p-4 text-sm dark:border-slate-800">
-      <h2 className="text-base font-semibold">Pronóstico por estado</h2>
+    <section className="rounded-2xl border border-slate-200 p-3 text-sm dark:border-slate-800 sm:p-4">
+      <h2 className="text-base font-semibold">Temperatura en cada estado</h2>
       <p className="mt-1 text-xs leading-5 text-slate-500">
-        Grados Celsius, probabilidad de lluvia y movimiento de las nubes (dirección a la que empuja
-        el viento). Cada estado usa su capital como punto de mayor precisión del modelo; no es el
-        promedio de todo el territorio. Fuente: Open-Meteo.
+        El número está sobre el estado, en °C. Toca un estado para ver lluvia y movimiento de las
+        nubes. El color y la cifra son del punto de la capital, no el promedio de todo el territorio.
       </p>
       {here ? (
-        <div className="mt-3">
-          <Card f={here} highlight />
-        </div>
+        <p className="mt-2 rounded-xl bg-sky-50 px-3 py-2 text-sm dark:bg-sky-950">
+          Donde estás: <strong>{here.tempC.toFixed(1)} °C</strong> · lluvia {Math.round(here.rainProbNow)}% ·
+          nubes {cloudMotion(here)}
+        </p>
       ) : null}
-      <input
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        placeholder="Buscar estado"
-        className="mt-3 w-full rounded-xl border border-slate-300 bg-transparent px-3 py-2 text-sm dark:border-slate-700"
-      />
       {error ? <p className="mt-2 text-amber-700">{error}</p> : null}
-      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {shown.map((r) => (
-          <Card key={r.id} f={r} highlight={nearest?.id === r.id} />
-        ))}
-      </div>
+      <MexicoTempMap forecasts={rows} selectedId={selected?.id ?? null} onSelect={setSelectedId} />
+      {selected ? (
+        <p className="mt-2 text-sm">
+          <strong>{selected.state}</strong> · {selected.tempC.toFixed(1)} °C · lluvia ahora{" "}
+          {Math.round(selected.rainProbNow)}% · próximas 6 h {Math.round(selected.rainProb6h)}% · nubes{" "}
+          {cloudMotion(selected)} · cielo cubierto {Math.round(selected.cloudCover)}%
+        </p>
+      ) : (
+        <p className="mt-2 text-xs text-slate-500">Cargando temperaturas…</p>
+      )}
     </section>
   );
 }
+
