@@ -5,6 +5,7 @@ import { CitySelector } from "@/components/CitySelector";
 import { EmergencyPanel } from "@/components/EmergencyPanel";
 import { MapView } from "@/components/MapView";
 import { PermissionModal } from "@/components/PermissionModal";
+import { StateForecast } from "@/components/StateForecast";
 import { useState } from "react";
 import { useThreatMonitor } from "@/lib/useThreatMonitor";
 import { clearSavedCoord } from "@/lib/geolocation";
@@ -91,6 +92,8 @@ export default function HomePage() {
           </ul>
         )}
       </section>
+
+      <StateForecast user={m.coord} />
 
       <div id="mapa" className="scroll-mt-4">
         <MapView
