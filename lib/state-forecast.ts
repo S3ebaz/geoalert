@@ -48,8 +48,7 @@ type OmItem = {
 
 const FIELDS =
   "current=temperature_2m,apparent_temperature,cloud_cover,wind_speed_10m,wind_direction_10m,precipitation_probability" +
-  "&hourly=temperature_2m,precipitation_probability,cloud_cover" +
-  "&forecast_days=2&timezone=auto&temperature_unit=celsius&wind_speed_unit=kmh";
+  "&forecast_days=1&timezone=auto&temperature_unit=celsius&wind_speed_unit=kmh";
 
 function asList(json: OmItem | OmItem[]): OmItem[] {
   return Array.isArray(json) ? json : [json];

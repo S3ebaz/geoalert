@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { RegisterSw } from "@/components/RegisterSw";
 import "./globals.css";
 
 const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
@@ -22,6 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es">
       <body className="bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
+        <RegisterSw />
         {children}
       </body>
     </html>
