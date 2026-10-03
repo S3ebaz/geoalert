@@ -55,7 +55,8 @@ export async function fetchActiveStorms(): Promise<StormEvent[]> {
 export async function fetchLocalWeather(lat: number, lon: number) {
   const url =
     `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
-    `&current=wind_speed_10m,precipitation,weather_code&wind_speed_unit=kmh`;
+    `&current=wind_speed_10m,precipitation,weather_code,precipitation_probability` +
+    `&hourly=precipitation_probability&forecast_hours=6&timezone=auto&wind_speed_unit=kmh`;
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) return null;
   const json = (await res.json()) as {
@@ -63,11 +64,18 @@ export async function fetchLocalWeather(lat: number, lon: number) {
       wind_speed_10m?: number;
       precipitation?: number;
       weather_code?: number;
+      precipitation_probability?: number;
     };
+    hourly?: { precipitation_probability?: number[] };
   };
+  const hours = json.hourly?.precipitation_probability ?? [];
+  const rainProbNow = json.current?.precipitation_probability ?? hours[0] ?? 0;
+  const rainProb6h = Math.max(rainProbNow, ...hours, 0);
   return {
     windKmh: json.current?.wind_speed_10m ?? 0,
     precipitationMm: json.current?.precipitation ?? 0,
-    weatherCode: json.current?.weather_code ?? 0
+    weatherCode: json.current?.weather_code ?? 0,
+    rainProbNow,
+    rainProb6h
   };
 }

@@ -72,15 +72,30 @@ export function evaluateCrossAlerts(input: {
 
   if (input.weather) {
     const w = input.weather;
-    if (w.windKmh >= 75 || w.precipitationMm >= 8) {
+    const raining = w.precipitationMm >= 0.2 || isRainCode(w.weatherCode);
+    if (raining || w.rainProbNow >= 50 || w.rainProb6h >= 60) {
+      const heavy = w.precipitationMm >= 8 || w.rainProbNow >= 80;
       alerts.push({
-        id: "wx-local",
+        id: "wx-rain",
         kind: "weather",
-        level: w.windKmh >= 100 || w.precipitationMm >= 20 ? "warning" : "watch",
-        title: "Condiciones locales severas",
-        detail: `Viento ${Math.round(w.windKmh)} km/h · precipitación ${w.precipitationMm.toFixed(1)} mm (Open-Meteo).`,
+        level: heavy ? "warning" : "watch",
+        title: raining ? "Lluvia en tu ubicación" : "Probabilidad de lluvia donde estás",
+        detail: raining
+          ? `Ahora ${w.precipitationMm.toFixed(1)} mm · probabilidad ${Math.round(w.rainProbNow)}% · próximas 6 h ${Math.round(w.rainProb6h)}% (Open-Meteo).`
+          : `Ahora ${Math.round(w.rainProbNow)}% · máximo en 6 h ${Math.round(w.rainProb6h)}%. No hay lluvia medida en este momento.`,
         distanceKm: 0,
-        sourceEventId: "open-meteo"
+        sourceEventId: "open-meteo-rain"
+      });
+    }
+    if (w.windKmh >= 75) {
+      alerts.push({
+        id: "wx-wind",
+        kind: "weather",
+        level: w.windKmh >= 100 ? "warning" : "watch",
+        title: "Viento fuerte en tu ubicación",
+        detail: `Viento ${Math.round(w.windKmh)} km/h (Open-Meteo).`,
+        distanceKm: 0,
+        sourceEventId: "open-meteo-wind"
       });
     }
   }
@@ -99,6 +114,14 @@ export function highestLevel(alerts: CrossAlert[]): ThreatLevel {
   if (alerts.some((a) => a.level === "warning")) return "warning";
   if (alerts.some((a) => a.level === "watch")) return "watch";
   return "none";
+}
+
+function isRainCode(code: number): boolean {
+  return (
+    (code >= 51 && code <= 67) ||
+    (code >= 80 && code <= 82) ||
+    (code >= 95 && code <= 99)
+  );
 }
 
 function quakeLevel(mag: number, km: number, ageMin: number): ThreatLevel {

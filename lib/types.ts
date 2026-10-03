@@ -79,6 +79,10 @@ export type WeatherSnapshot = {
   windKmh: number;
   precipitationMm: number;
   weatherCode: number;
+  /** Probabilidad de lluvia en este momento, 0–100. */
+  rainProbNow: number;
+  /** Máxima probabilidad en las próximas 6 horas, 0–100. */
+  rainProb6h: number;
 };
 
 export type CrossAlert = {

@@ -103,10 +103,11 @@ export function useThreatMonitor() {
 
   useEffect(() => {
     for (const a of alerts) {
-      if (a.level === "emergency" && !seen.current.has(a.id)) {
+      const rain = a.id === "wx-rain";
+      if ((a.level === "emergency" || rain) && !seen.current.has(a.id)) {
         seen.current.add(a.id);
         pushLocalAlert(a.title, a.detail);
-        setEmergencyOpen(true);
+        if (a.level === "emergency") setEmergencyOpen(true);
       }
     }
   }, [alerts]);

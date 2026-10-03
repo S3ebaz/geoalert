@@ -27,6 +27,7 @@ export function AlertBanner({
   }
 
   const top = alerts[0];
+  const rain = alerts.find((a) => a.id === "wx-rain");
   const tone =
     level === "emergency"
       ? "bg-red-800 emergency-pulse"
@@ -41,6 +42,11 @@ export function AlertBanner({
           <p className="text-xs font-semibold uppercase tracking-wide">{COPY[level]}</p>
           <p className="mt-1 font-medium">{top.title}</p>
           <p className="mt-1 text-sm text-white/90">{top.detail}</p>
+          {rain && rain.id !== top.id ? (
+            <p className="mt-2 text-sm text-white/90">
+              {rain.title}. {rain.detail}
+            </p>
+          ) : null}
         </div>
         {level === "emergency" ? (
           <button
