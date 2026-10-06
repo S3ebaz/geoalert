@@ -6,6 +6,7 @@ import { EmergencyPanel } from "@/components/EmergencyPanel";
 import { MapView } from "@/components/MapView";
 import { PermissionModal } from "@/components/PermissionModal";
 import { StateForecast } from "@/components/StateForecast";
+import { WeatherBoard } from "@/components/WeatherBoard";
 import { useState } from "react";
 import { useThreatMonitor } from "@/lib/useThreatMonitor";
 import { clearSavedCoord } from "@/lib/geolocation";
@@ -92,6 +93,8 @@ export default function HomePage() {
           </ul>
         )}
       </section>
+
+      <WeatherBoard user={m.coord} onRefresh={() => void m.refresh()} />
 
       <StateForecast user={m.coord} />
 
