@@ -262,19 +262,10 @@ export function MapCanvas({
       >
         <TileLayer
           key={mapStyle}
-          attribution={
-            mapStyle === "hybrid"
-              ? "Imagery &copy; Esri"
-              : 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          }
-          url={
-            mapStyle === "hybrid"
-              ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-              : "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-          }
-          maxZoom={18}
-          updateWhenIdle
-          keepBuffer={1}
+          attribution='Map data &copy; <a href="https://www.google.com/maps">Google</a>'
+          url={`https://mt{s}.google.com/vt/lyrs=${mapStyle === "hybrid" ? "y" : "m"}&hl=es&x={x}&y={y}&z={z}`}
+          subdomains={["0", "1", "2", "3"]}
+          maxZoom={20}
         />
         <FrameStorms storms={storms} user={user} token={stormFrame} />
         <FlyToUser user={user} token={userFrame} />

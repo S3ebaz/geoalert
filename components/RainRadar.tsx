@@ -29,7 +29,12 @@ export function RainRadar({ lat, lon }: { lat: number; lon: number }) {
   return (
     <div className="h-52 w-full">
       <MapContainer center={[lat, lon]} zoom={6} className="h-full w-full" zoomControl={false} attributionControl={false}>
-        <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png" subdomains={["a", "b", "c", "d"]} />
+        <TileLayer
+          attribution="Google"
+          url="https://mt{s}.google.com/vt/lyrs=m&hl=es&x={x}&y={y}&z={z}"
+          subdomains={["0", "1", "2", "3"]}
+          maxZoom={20}
+        />
         {tiles ? <TileLayer url={tiles} opacity={0.7} /> : null}
         <Frame lat={lat} lon={lon} />
         <Marker

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import L from "leaflet";
-import { GeoJSON, MapContainer, Marker, Popup } from "react-leaflet";
+import { GeoJSON, MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
 import { cloudMotion, type PlaceForecast } from "@/lib/state-forecast";
 import "leaflet/dist/leaflet.css";
@@ -117,10 +117,16 @@ export function MexicoTempMap({ forecasts, selectedId, onSelect }: Props) {
       <MapContainer
         center={[23.6, -102.5]}
         zoom={5}
-        className="h-full w-full bg-sky-100"
+        className="h-full w-full"
         scrollWheelZoom
-        maxZoom={8}
+        maxZoom={12}
       >
+        <TileLayer
+          attribution='Map data &copy; <a href="https://www.google.com/maps">Google</a>'
+          url="https://mt{s}.google.com/vt/lyrs=m&hl=es&x={x}&y={y}&z={z}"
+          subdomains={["0", "1", "2", "3"]}
+          maxZoom={12}
+        />
         {geo ? (
           <GeoJSON
             data={geo}
