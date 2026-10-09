@@ -27,6 +27,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: python3 scripts/snapshot-storms.py
+      - run: python3 scripts/snapshot-fronts.py
       - run: npm run typecheck
       - run: npm run build
         env:

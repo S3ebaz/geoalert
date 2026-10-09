@@ -92,6 +92,15 @@ export type ColdFront = {
   summary: string;
 };
 
+export type FrontBulletin = {
+  source: "SMN";
+  aviso: string;
+  issuedAt: string;
+  active: boolean;
+  summary: string;
+  url: string;
+};
+
 export type CrossAlert = {
   id: string;
   kind: "earthquake" | "storm" | "weather" | "front";

@@ -97,21 +97,30 @@ export default function HomePage() {
       <WeatherBoard user={m.coord} onRefresh={() => void m.refresh()} />
 
       <section className="rounded-2xl border border-slate-200 p-4 text-sm dark:border-slate-800">
-        <h2 className="font-semibold">Frentes fríos</h2>
+        <h2 className="font-semibold">Frentes fríos · aviso SMN</h2>
         <p className="mt-1 text-xs text-slate-500">
-          Se marca un frente si en varias ciudades baja la temperatura, sube la presión y el viento
-          viene del norte. Es una detección del modelo, no el número oficial del SMN.
+          Aviso {m.frontBulletin.aviso || "—"} · emisión {m.frontBulletin.issuedAt || "sin hora"} · fuente
+          oficial del Servicio Meteorológico Nacional.
         </p>
+        <p className="mt-2 font-medium">{m.frontBulletin.summary}</p>
         {m.fronts.length === 0 ? (
-          <p className="mt-2 text-slate-500">Ningún frente frío activo en la red de ciudades.</p>
+          <p className="mt-2 text-slate-500">
+            El SMN no marca un frente sobre el país en este aviso, así que el mapa no dibuja uno.
+          </p>
         ) : (
           m.fronts.map((f) => (
             <p key={f.id} className="mt-2">
-              <span className="font-medium">{f.name}</span> en el mapa, de {f.points[0]?.name} a{" "}
-              {f.points[f.points.length - 1]?.name}. {f.summary}
+              <span className="font-medium">{f.name}</span>
+              {f.points.length > 0
+                ? ` sobre ${f.points.map((p) => p.name).join(", ")}.`
+                : " publicado por el SMN, sin coordenadas de estados en el aviso."}{" "}
+              {f.summary}
             </p>
           ))
         )}
+        <a className="mt-2 inline-block text-xs underline" href={m.frontBulletin.url} target="_blank" rel="noreferrer">
+          Ver aviso del SMN
+        </a>
       </section>
 
       <StateForecast user={m.coord} />

@@ -11,8 +11,8 @@ import {
 } from "./geolocation";
 import { ensureNotificationPermission, pushLocalAlert } from "./notifications";
 import { fetchActiveStorms, fetchLocalWeather, bundledStorms } from "./storms";
-import { fetchColdFronts } from "./fronts";
-import type { ColdFront, Coord, CrossAlert, EarthquakeEvent, StormEvent, WeatherSnapshot } from "./types";
+import { bundledFronts, fetchFrontReport } from "./fronts";
+import type { ColdFront, Coord, CrossAlert, EarthquakeEvent, FrontBulletin, StormEvent, WeatherSnapshot } from "./types";
 
 export function useThreatMonitor() {
   const [coord, setCoord] = useState<Coord | null>(null);
@@ -22,7 +22,8 @@ export function useThreatMonitor() {
   const [geoError, setGeoError] = useState<string | null>(null);
   const [quakes, setQuakes] = useState<EarthquakeEvent[]>([]);
   const [storms, setStorms] = useState<StormEvent[]>(bundledStorms);
-  const [fronts, setFronts] = useState<ColdFront[]>([]);
+  const [fronts, setFronts] = useState<ColdFront[]>(bundledFronts.fronts);
+  const [frontBulletin, setFrontBulletin] = useState<FrontBulletin>(bundledFronts.bulletin);
   const [weather, setWeather] = useState<WeatherSnapshot | null>(null);
   const [emergencyOpen, setEmergencyOpen] = useState(false);
   const seen = useRef(new Set<string>());
@@ -83,8 +84,11 @@ export function useThreatMonitor() {
   useEffect(() => {
     let stop = false;
     async function loadFronts() {
-      const next = await fetchColdFronts();
-      if (!stop) setFronts(next);
+      const next = await fetchFrontReport();
+      if (!stop) {
+        setFronts(next.fronts);
+        setFrontBulletin(next.bulletin);
+      }
     }
     void loadFronts();
     const id = window.setInterval(() => void loadFronts(), 30 * 60_000);
@@ -140,6 +144,7 @@ export function useThreatMonitor() {
     quakes,
     storms,
     fronts,
+    frontBulletin,
     alerts,
     level,
     emergencyOpen,
