@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { Coord, CrossAlert, EarthquakeEvent, MapSelection, StormEvent } from "@/lib/types";
+import type { ColdFront, Coord, CrossAlert, EarthquakeEvent, MapSelection, StormEvent } from "@/lib/types";
 
 const MapCanvas = dynamic(() => import("./MapCanvas").then((m) => m.MapCanvas), {
   ssr: false,
@@ -16,6 +16,7 @@ export function MapView(props: {
   user: Coord | null;
   quakes: EarthquakeEvent[];
   storms: StormEvent[];
+  fronts: ColdFront[];
   alerts: CrossAlert[];
   selection: MapSelection;
   onSelect: (s: MapSelection) => void;

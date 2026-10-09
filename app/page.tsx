@@ -96,6 +96,24 @@ export default function HomePage() {
 
       <WeatherBoard user={m.coord} onRefresh={() => void m.refresh()} />
 
+      <section className="rounded-2xl border border-slate-200 p-4 text-sm dark:border-slate-800">
+        <h2 className="font-semibold">Frentes fríos</h2>
+        <p className="mt-1 text-xs text-slate-500">
+          Se marca un frente si en varias ciudades baja la temperatura, sube la presión y el viento
+          viene del norte. Es una detección del modelo, no el número oficial del SMN.
+        </p>
+        {m.fronts.length === 0 ? (
+          <p className="mt-2 text-slate-500">Ningún frente frío activo en la red de ciudades.</p>
+        ) : (
+          m.fronts.map((f) => (
+            <p key={f.id} className="mt-2">
+              <span className="font-medium">{f.name}</span> en el mapa, de {f.points[0]?.name} a{" "}
+              {f.points[f.points.length - 1]?.name}. {f.summary}
+            </p>
+          ))
+        )}
+      </section>
+
       <StateForecast user={m.coord} />
 
       <div id="mapa" className="scroll-mt-4">
@@ -103,6 +121,7 @@ export default function HomePage() {
           user={m.coord}
           quakes={m.quakes}
           storms={m.storms}
+          fronts={m.fronts}
           alerts={m.alerts}
           selection={selection}
           onSelect={setSelection}

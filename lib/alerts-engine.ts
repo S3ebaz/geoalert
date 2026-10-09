@@ -5,7 +5,8 @@ import type {
   EarthquakeEvent,
   StormEvent,
   ThreatLevel,
-  WeatherSnapshot
+  WeatherSnapshot,
+  ColdFront
 } from "./types";
 
 /**
@@ -25,6 +26,7 @@ export function evaluateCrossAlerts(input: {
   quakes: EarthquakeEvent[];
   storms: StormEvent[];
   weather: WeatherSnapshot | null;
+  fronts?: ColdFront[];
   now?: number;
 }): CrossAlert[] {
   const now = input.now ?? Date.now();
@@ -67,6 +69,28 @@ export function evaluateCrossAlerts(input: {
       detail: `${distanceKm.toFixed(0)} km del centro. ${s.movement ?? "Movimiento no informado."} Fuente: NHC.`,
       distanceKm,
       sourceEventId: s.id
+    });
+  }
+
+  for (const front of input.fronts ?? []) {
+    let nearest = front.points[0];
+    let distanceKm = haversineKm(input.user, nearest);
+    for (const p of front.points) {
+      const d = haversineKm(input.user, p);
+      if (d < distanceKm) {
+        nearest = p;
+        distanceKm = d;
+      }
+    }
+    if (distanceKm > 350) continue;
+    alerts.push({
+      id: `front-${front.id}`,
+      kind: "front",
+      level: distanceKm <= 150 && nearest.dropC >= 5 ? "warning" : "watch",
+      title: `${front.name} cerca de tu ubicación`,
+      detail: `${distanceKm.toFixed(0)} km de ${nearest.name}. Bajó ${nearest.dropC.toFixed(1)} °C en 18 h, viento del norte a ${Math.round(nearest.windKmh)} km/h. ${front.summary}`,
+      distanceKm,
+      sourceEventId: front.id
     });
   }
 

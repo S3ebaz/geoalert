@@ -85,9 +85,16 @@ export type WeatherSnapshot = {
   rainProb6h: number;
 };
 
+export type ColdFront = {
+  id: string;
+  name: string;
+  points: Array<{ name: string; lat: number; lon: number; dropC: number; windFrom: number; windKmh: number }>;
+  summary: string;
+};
+
 export type CrossAlert = {
   id: string;
-  kind: "earthquake" | "storm" | "weather";
+  kind: "earthquake" | "storm" | "weather" | "front";
   level: ThreatLevel;
   title: string;
   detail: string;

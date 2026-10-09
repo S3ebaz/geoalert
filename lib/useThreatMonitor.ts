@@ -11,7 +11,8 @@ import {
 } from "./geolocation";
 import { ensureNotificationPermission, pushLocalAlert } from "./notifications";
 import { fetchActiveStorms, fetchLocalWeather, bundledStorms } from "./storms";
-import type { Coord, CrossAlert, EarthquakeEvent, StormEvent, WeatherSnapshot } from "./types";
+import { fetchColdFronts } from "./fronts";
+import type { ColdFront, Coord, CrossAlert, EarthquakeEvent, StormEvent, WeatherSnapshot } from "./types";
 
 export function useThreatMonitor() {
   const [coord, setCoord] = useState<Coord | null>(null);
@@ -21,6 +22,7 @@ export function useThreatMonitor() {
   const [geoError, setGeoError] = useState<string | null>(null);
   const [quakes, setQuakes] = useState<EarthquakeEvent[]>([]);
   const [storms, setStorms] = useState<StormEvent[]>(bundledStorms);
+  const [fronts, setFronts] = useState<ColdFront[]>([]);
   const [weather, setWeather] = useState<WeatherSnapshot | null>(null);
   const [emergencyOpen, setEmergencyOpen] = useState(false);
   const seen = useRef(new Set<string>());
@@ -78,6 +80,20 @@ export function useThreatMonitor() {
     };
   }, []);
 
+  useEffect(() => {
+    let stop = false;
+    async function loadFronts() {
+      const next = await fetchColdFronts();
+      if (!stop) setFronts(next);
+    }
+    void loadFronts();
+    const id = window.setInterval(() => void loadFronts(), 30 * 60_000);
+    return () => {
+      stop = true;
+      window.clearInterval(id);
+    };
+  }, []);
+
   const refresh = useCallback(async () => {
     if (!coord) return;
     const [q, w] = await Promise.all([
@@ -96,8 +112,8 @@ export function useThreatMonitor() {
 
   const alerts: CrossAlert[] = useMemo(() => {
     if (!coord) return [];
-    return evaluateCrossAlerts({ user: coord, quakes, storms, weather });
-  }, [coord, quakes, storms, weather]);
+    return evaluateCrossAlerts({ user: coord, quakes, storms, weather, fronts });
+  }, [coord, quakes, storms, weather, fronts]);
 
   const level = highestLevel(alerts);
 
@@ -123,6 +139,7 @@ export function useThreatMonitor() {
     pickManual,
     quakes,
     storms,
+    fronts,
     alerts,
     level,
     emergencyOpen,

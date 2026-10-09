@@ -13,6 +13,7 @@ import {
   useMapEvents
 } from "react-leaflet";
 import type {
+  ColdFront,
   Coord,
   CrossAlert,
   EarthquakeEvent,
@@ -208,6 +209,7 @@ export function MapCanvas({
   user,
   quakes,
   storms,
+  fronts,
   alerts,
   selection,
   onSelect
@@ -215,6 +217,7 @@ export function MapCanvas({
   user: Coord | null;
   quakes: EarthquakeEvent[];
   storms: StormEvent[];
+  fronts: ColdFront[];
   alerts: CrossAlert[];
   selection: MapSelection;
   onSelect: (s: MapSelection) => void;
@@ -333,6 +336,32 @@ export function MapCanvas({
             </Fragment>
           );
         })}
+
+        {fronts.map((front) => (
+          <Fragment key={front.id}>
+            <Polyline
+              positions={front.points.map((p) => [p.lat, p.lon] as [number, number])}
+              interactive={false}
+              pathOptions={{ color: "#1d4ed8", weight: 5, opacity: 0.95 }}
+            />
+            {front.points.map((p) => (
+              <Marker
+                key={`${front.id}-${p.name}`}
+                position={[p.lat, p.lon]}
+                icon={L.divIcon({
+                  className: "ga-symbol",
+                  iconSize: [18, 18],
+                  iconAnchor: [9, 9],
+                  html: `<div title="Frente frío" style="width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:14px solid #1d4ed8"></div>`
+                })}
+              >
+                <Tooltip permanent direction="top" className="ga-tip">
+                  Frente frío · {p.name} · −{p.dropC.toFixed(0)} °C
+                </Tooltip>
+              </Marker>
+            ))}
+          </Fragment>
+        ))}
 
         {visibleQuakes.map((q) => {
           const isSel = q.id === selQuakeId;
