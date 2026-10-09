@@ -50,13 +50,15 @@ html = urllib.request.urlopen(req, timeout=40).read().decode("utf-8", "replace")
 text = re.sub(r"<script[\s\S]*?</script>", " ", html, flags=re.I)
 text = re.sub(r"<style[\s\S]*?</style>", " ", text, flags=re.I)
 text = re.sub(r"<[^>]+>", "\n", text)
-lines = [re.sub(r"\s+", " ", line).strip() for line in text.splitlines()]
-lines = [line for line in lines if line]
+lines = [re.sub(r"\s+", " ", line).replace("\xa0", " ").strip() for line in text.splitlines()]
+lines = [line for line in lines if line and line not in {"&nbsp;"}]
 blob = "\n".join(lines)
 
 aviso = next((line.split(":", 1)[1].strip() for line in lines if line.lower().startswith("no. aviso")), "")
 issued = next((line.split(":", 1)[1].strip() for line in lines if line.lower().startswith("emisión")), "")
-synthesis = next((line for line in lines if "SISTEMAS FRONTALES" in line.upper() or "FRENTE FR" in line.upper()), "")
+synthesis = next((line for line in lines if "SIN SISTEMAS FRONTALES" in line.upper()), "")
+if not synthesis:
+    synthesis = next((line for line in lines if re.search(r"frente fr[ií]o\s+\d+", line, re.I)), "")
 inactive = "SIN SISTEMAS FRONTALES" in blob.upper()
 number = ""
 match = re.search(r"frente fr[ií]o\s*(?:n[uú]mero\s*)?(\d+)", blob, re.I)
